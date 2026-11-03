@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% set page_title = "Reports" %}
+{% set active_module = "reports" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">PLACEMENT REPORTS</p><h1>Reports</h1><p class="subheading">Review the complete student register or look up a student by registration number.</p></div></div>
+<section class="panel report-panel">
+  <div class="panel-heading"><div><h2>Report 1 · All students</h2><p>Student, skill, placement status, and offer summary</p></div><span class="count-badge">{{ students|length }} students</span></div>
+  <div class="table-wrap"><table><thead><tr><th>REGISTRATION NO.</th><th>DEPARTMENT</th><th>GRAD YEAR</th><th>SKILLS</th><th>STATUS</th><th>OFFERS</th><th>OFFER DETAILS</th></tr></thead><tbody>
+    {% for student in students %}<tr><td><strong>{{ student.roll_no }}</strong></td><td>{{ student.department }}</td><td>{{ student.graduation_year }}</td><td>{{ student.skills or '—' }}</td><td><span class="status {{ 'placed' if student.placement_status == 'Placed' else 'not-placed' }}">{{ student.placement_status }}</span></td><td>{{ student.offer_count }}</td><td class="offer-summary">{{ student.offers_summary or '—' }}</td></tr>{% else %}<tr><td colspan="7" class="empty-state">No student records available for the report.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+<section class="panel report-panel individual-report">
+  <div class="panel-heading"><div><h2>Report 2 · Individual student</h2><p>Enter the registration number to show the student's full report.</p></div></div>
+  <form class="report-search" action="{{ url_for('reports_page') }}" method="get">
+    <label for="roll_no">Registration number</label><input id="roll_no" name="roll_no" value="{{ searched_roll_no }}" required placeholder="e.g. CSE2026001">
+    <button class="button button-primary" type="submit">Generate report</button>
+  </form>
+  {% if searched_roll_no and not student_report %}<div class="report-not-found">No student found with registration number “{{ searched_roll_no }}”. Check the number and try again.</div>{% endif %}
+  {% if student_report %}
+    <div class="student-report-card">
+      <div class="report-profile"><span class="student-avatar">{{ student_report.roll_no[:2]|upper }}</span><div><h3>{{ student_report.roll_no }}</h3><p>{{ student_report.department }} · Class of {{ student_report.graduation_year }}</p></div><span class="status {{ 'placed' if student_report.placement_status == 'Placed' else 'not-placed' }}">{{ student_report.placement_status }}</span></div>
+      <div class="report-facts"><div><small>REGISTRATION NUMBER</small><strong>{{ student_report.roll_no }}</strong></div><div><small>DEPARTMENT</small><strong>{{ student_report.department }}</strong></div><div><small>GRADUATION YEAR</small><strong>{{ student_report.graduation_year }}</strong></div><div><small>SKILLS</small><strong>{{ student_report.skills|join(', ') if student_report.skills else 'Not recorded' }}</strong></div></div>
+      <div class="panel-heading nested-heading"><div><h2>Placement and offer history</h2><p>{{ student_report.placements|length }} offer record{{ '' if student_report.placements|length == 1 else 's' }} stored in MySQL</p></div></div>
+      <div class="table-wrap"><table><thead><tr><th>COMPANY</th><th>ROLE</th><th>PACKAGE</th><th>DATE</th><th>STATUS</th></tr></thead><tbody>
+        {% for offer in student_report.placements %}<tr><td><strong>{{ offer.company }}</strong></td><td>{{ offer.role }}</td><td>{{ "%.2f"|format(offer.package_lpa) }} LPA</td><td>{{ offer.placement_date.strftime('%d %b %Y') }}</td><td><span class="status {{ 'placed' if offer.status == 'Placed' else 'not-placed' }}">{{ offer.status }}</span></td></tr>{% else %}<tr><td colspan="5" class="empty-state">No offers are recorded for this student.</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

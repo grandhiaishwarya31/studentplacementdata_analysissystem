@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% set page_title = "Database unavailable" %}
+{% set active_module = "" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">DATABASE CONNECTION</p><h1>Could not load this page</h1><p class="subheading">Check that MySQL is running and the connection settings in .env are correct.</p></div></div>
+<div class="flash error">If this is a new installation, initialize the tables with <code>flask --app app init-db</code>.</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% set page_title = "Students" %}
+{% set active_module = "students" %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">STUDENT RECORDS</p><h1>Students</h1><p class="subheading">Add students, record employer offers, and review saved entries below.</p></div><span class="count-badge">{{ students|length }} students · {{ placements|length }} offers</span></div>
+<div class="management-grid">
+  <section class="panel form-panel" id="add-student"><div class="panel-heading"><div><h2>Portal 1 · Add a student</h2><p>Student information is saved in MySQL.</p></div></div>
+    <form action="{{ url_for('create_student') }}" method="post" class="data-form">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <label>Registration number<input name="roll_no" maxlength="40" required placeholder="e.g. CSE2026001"></label>
+      <label>Department<input name="department" maxlength="100" required placeholder="e.g. Computer Science"></label>
+      <label>Graduation year<input name="graduation_year" type="number" min="2000" max="2200" required placeholder="2026"></label>
+      <label class="full-field">Skills <span class="label-help">Separate with commas</span><input name="skills" maxlength="1000" placeholder="Python, SQL, Communication"></label>
+      <button class="button button-primary" type="submit">Save student</button>
+    </form>
+  </section>
+  <section class="panel form-panel" id="record-offer"><div class="panel-heading"><div><h2>Portal 2 · Record an offer</h2><p>Save company, role, package, date, and outcome.</p></div></div>
+    <form action="{{ url_for('create_placement') }}" method="post" class="data-form">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+      <label class="full-field">Student / registration number<select name="student_id" required><option value="">Select student</option>{% for student in students %}<option value="{{ student.student_id }}">{{ student.roll_no }} — {{ student.department }}</option>{% endfor %}</select></label>
+      <label>Company<input name="company" maxlength="150" required placeholder="Company name"></label>
+      <label>Role<input name="role" maxlength="150" required placeholder="Role title"></label>
+      <label>Package (LPA)<input name="package_lpa" type="number" min="0" max="99999999.99" step="0.01" required placeholder="e.g. 8.50"></label>
+      <label>Placement date<input name="placement_date" type="date" required></label>
+      <label>Status<select name="status" required><option>Offered</option><option>Placed</option><option>Rejected</option></select></label>
+      <button class="button button-primary" type="submit">Save offer</button>
+    </form>
+  </section>
+</div>
+<section class="panel data-list-panel"><div class="panel-heading"><div><h2>Saved student records</h2><p>Every student entered in the system appears here.</p></div><span class="count-badge">{{ students|length }} records</span></div>
+  <div class="table-wrap"><table><thead><tr><th>REGISTRATION NO.</th><th>DEPARTMENT</th><th>GRADUATION YEAR</th><th>SKILLS · EDITABLE</th><th>PLACEMENT STATUS</th></tr></thead><tbody>
+  {% for student in students %}<tr><td><span class="student-avatar">{{ student.roll_no[:2]|upper }}</span><strong>{{ student.roll_no }}</strong></td><td>{{ student.department }}</td><td>{{ student.graduation_year }}</td><td><form class="skill-form" action="{{ url_for('update_student_skills', student_id=student.student_id) }}" method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><input aria-label="Skills for {{ student.roll_no }}" name="skills" value="{{ student.skills or '' }}" placeholder="Add comma-separated skills"><button title="Save skills" aria-label="Save skills">↵</button></form></td><td><span class="status {{ 'placed' if student.placement_status == 'Placed' else 'not-placed' }}">{{ student.placement_status }}</span></td></tr>{% else %}<tr><td colspan="5" class="empty-state">No students saved yet. Add the first student above.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+<section class="panel data-list-panel"><div class="panel-heading"><div><h2>Saved offer records</h2><p>Every offer entered in the system appears below.</p></div><span class="count-badge">{{ placements|length }} records</span></div>
+  <div class="table-wrap"><table><thead><tr><th>REGISTRATION NO.</th><th>STUDENT</th><th>COMPANY</th><th>ROLE</th><th>PACKAGE</th><th>DATE</th><th>STATUS</th></tr></thead><tbody>
+  {% for placement in placements %}<tr><td><strong>{{ placement.roll_no }}</strong></td><td>{{ placement.department }}</td><td>{{ placement.company }}</td><td>{{ placement.role }}</td><td>{{ "%.2f"|format(placement.package_lpa) }} LPA</td><td>{{ placement.placement_date.strftime('%d %b %Y') }}</td><td><form class="status-form" action="{{ url_for('update_placement_status', placement_id=placement.placement_id) }}" method="post"><input type="hidden" name="_csrf_token" value="{{ csrf_token() }}"><select name="status" aria-label="Status for {{ placement.company }}" onchange="this.form.submit()">{% for status in ['Offered', 'Placed', 'Rejected'] %}<option value="{{ status }}" {{ 'selected' if placement.status == status }}>{{ status }}</option>{% endfor %}</select></form></td></tr>{% else %}<tr><td colspan="7" class="empty-state">No offers saved yet. Record an offer above.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

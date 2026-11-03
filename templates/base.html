@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_title }} | Pathway Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('index') }}"><span class="brand-mark">P</span><span>Pathway<span class="brand-light">.analytics</span></span></a>
+    <div class="nav-label">WORKSPACE</div>
+    <a class="nav-item {{ 'active' if active_module == 'overview' else '' }}" href="{{ url_for('index') }}"><span>▦</span> Overview</a>
+    <a class="nav-item {{ 'active' if active_module == 'students' else '' }}" href="{{ url_for('students_page') }}"><span>♙</span> Students</a>
+    <a class="nav-item {{ 'active' if active_module == 'reports' else '' }}" href="{{ url_for('reports_page') }}"><span>▤</span> Reports</a>
+    <div class="sidebar-bottom">
+      <div class="privacy-card"><span class="privacy-icon">✓</span><div><strong>Privacy first</strong><small>Use approved student data.<br>Share reports responsibly.</small></div></div>
+      <div class="user-chip"><span class="avatar">PA</span><span><strong>Placement office</strong><small>Placement workspace</small></span></div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div class="breadcrumbs">Workspace <span>/</span> <strong>{{ page_title }}</strong></div>
+      <div class="top-actions"><span class="live-dot"></span><span>Placement overview</span><span class="top-avatar">PA</span></div>
+    </header>
+    <section class="page-content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}<div class="flash-stack">{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+      <footer>Placement metrics use all students currently recorded. Package values are annual LPA. Aggregate insights only.</footer>
+    </section>
+  </main>
+</body>
+</html>

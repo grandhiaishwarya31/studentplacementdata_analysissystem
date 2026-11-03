@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% set page_title = "Overview" %}
+{% set active_module = "overview" %}
+{% block content %}
+<div class="page-heading">
+  <div><p class="eyebrow">PLACEMENT INTELLIGENCE</p><h1>Overview <span class="wave">✦</span></h1><p class="subheading">A clear view of student outcomes, department results, packages, and skills demand.</p></div>
+  <a class="button button-primary" href="{{ url_for('students_page') }}"><span>＋</span> Manage students</a>
+</div>
+<div class="stats-grid">
+  <article class="stat-card"><div class="stat-top"><span>Placement rate</span><span class="stat-icon purple">↗</span></div><div class="stat-value">{{ placement_rate }}<small>%</small></div><div class="stat-foot"><span class="metric-caption">{{ placed_count }} placed</span><span class="muted">of {{ eligible_count }} students</span></div><div class="progress"><span style="width: {{ placement_rate }}%"></span></div></article>
+  <article class="stat-card"><div class="stat-top"><span>Students</span><span class="stat-icon blue">♙</span></div><div class="stat-value">{{ eligible_count }}</div><div class="stat-foot"><span class="muted">Students stored in MySQL</span></div><div class="mini-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
+  <article class="stat-card"><div class="stat-top"><span>Average package</span><span class="stat-icon green">₹</span></div><div class="stat-value">{% if package_summary.mean is not none %}{{ "%.2f"|format(package_summary.mean) }}{% else %}—{% endif %}<small> LPA</small></div><div class="stat-foot"><span class="muted">Across {{ package_summary.count }} placed offers</span></div><div class="package-note">Median <strong>{% if package_summary.median is not none %}{{ "%.2f"|format(package_summary.median) }}{% else %}—{% endif %} LPA</strong></div></article>
+  <article class="stat-card"><div class="stat-top"><span>Departments</span><span class="stat-icon orange">⌂</span></div><div class="stat-value">{{ departments|length }}</div><div class="stat-foot"><span class="muted">Represented in this dataset</span></div><div class="dept-pills">{% for department in departments[:3] %}<span>{{ department.department }}</span>{% endfor %}</div></article>
+</div>
+<div class="insight-grid">
+  <section class="panel chart-panel"><div class="panel-heading"><div><h2>Placement by department</h2><p>Share of students placed in each department</p></div><span class="tag">PLACEMENT RATE</span></div><img class="chart-image" src="{{ url_for('charts', chart_type='placements') }}" alt="Bar chart showing placement rate by department"><div class="chart-legend"><span><i class="legend-dot purple-dot"></i> Placement rate</span><span>All students currently recorded</span></div></section>
+  <section class="panel chart-panel"><div class="panel-heading"><div><h2>Package distribution</h2><p>Annual package for placed offers</p></div><span class="tag green-tag">IN LPA</span></div><img class="chart-image" src="{{ url_for('charts', chart_type='packages') }}" alt="Histogram of annual packages for placed offers"><div class="chart-legend"><span><i class="legend-dot green-dot"></i> Placed offers</span><span>₹ lakh per annum</span></div></section>
+</div>
+<div class="lower-grid">
+  <section class="panel"><div class="panel-heading"><div><h2>Department comparison</h2><p>Eligible count and confirmed placements</p></div><a class="text-link" href="{{ url_for('reports_page') }}">Open reports →</a></div>
+    <div class="table-wrap"><table><thead><tr><th>DEPARTMENT</th><th>STUDENTS</th><th>PLACED</th><th>PLACEMENT RATE</th></tr></thead><tbody>
+      {% for department in departments %}<tr><td><strong>{{ department.department }}</strong></td><td>{{ department.eligible }}</td><td>{{ department.placed }}</td><td><span class="status {{ 'placed' if department.rate > 0 else 'not-placed' }}">{{ department.rate }}%</span></td></tr>{% else %}<tr><td colspan="4" class="empty-state">Add student records to see department outcomes.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+  <section class="panel skills-panel"><div class="panel-heading"><div><h2>Skills in demand</h2><p>Most frequently recorded skills</p></div><span class="small-icon">⌁</span></div>
+    {% for skill in skills %}<div class="skill-row"><div class="skill-label"><span>{{ skill.skill }}</span><span>{{ skill.students }} student{{ '' if skill.students == 1 else 's' }}</span></div><div class="skill-track"><i style="width: {{ (skill.students / skills[0].students * 100)|round if skills and skills[0].students else 0 }}%"></i></div></div>{% else %}<div class="empty-state skill-empty">Add student skills to see demand insights.</div>{% endfor %}
+  </section>
+</div>
+{% endblock %}
